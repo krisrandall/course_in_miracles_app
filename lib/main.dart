@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'lessonStructure.dart';
@@ -16,8 +17,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'A Course in Miracles',
       theme: ThemeData(
+        fontFamily: 'Sparky',
         primarySwatch: Colors.amber,
       ),
       home: const MyHomePage(title: 'A Course in Miracles'),
@@ -97,42 +99,47 @@ class _MyHomePageState extends State<MyHomePage> {
             trailing: const Icon(Icons.check_circle),
             iconColor: Colors.grey,
             onTap: () {
-              // Update the state of the app.
-              // ...
+              Navigator.pop(context);
+              setState(() {
+                _currentLessonIndex = _lessons.indexOf(l);
+              });
             },
           )).toList(),
 
-          ListTile(
-            title: const Text('Setting'),
-            onTap: () {
-              // Update the state of the app.
-              // ...
-            },
-          ),
         ],
       ),
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      drawer: sideMenu,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_currentLessonIndex',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+    if (_lessons.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Loading...'),
         ),
-      ),
+        drawer: sideMenu,
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    } else {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(_lessons[_currentLessonIndex].lessonNumber),
+        ),
+        drawer: sideMenu,
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Text(
+                _lessons[_currentLessonIndex].lessonShortTitle, 
+                style: Theme.of(context).textTheme.headline5,
+                
+              ),
+              Html(data: _lessons[_currentLessonIndex].lessonText),
+            ],
+          ),
+        ),
+      );
+    }
 
-    );
   }
 }
