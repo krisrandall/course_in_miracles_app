@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'lessonStructure.dart';
 
 void main() {
@@ -39,12 +40,39 @@ class _MyHomePageState extends State<MyHomePage> {
 
   
   void _loadLessons() async {
-    var response = await http.get(Uri.parse(_dataSourceUrl));
-    print(response);
 
-    setState(() {
-      _lessons = (json.decode(response.body) as List).map((i) => Lesson.fromJson(i)).toList();
-    });
+    // is it already downloaded into local storage ?
+    final db = await SharedPreferences.getInstance();
+    var lessonsJsonLocal;
+    try {
+      lessonsJsonLocal = db.getString('lessonsJSON');
+      _lessons = (json.decode(lessonsJsonLocal) as List).map((i) => Lesson.fromJson(i)).toList();
+    } catch(e) {
+      print(e);
+      // this is my error handling :o)
+      _lessons = [
+        Lesson(audio: '', lessonNumber: 'NO DATA', lessonShortTitle: 'Maybe no internet', lessonTitle: 'NO DATA', lessonText: e.toString(), fullTitle: '', link: ''),
+      ];
+    }
+
+    // also fetch from server, in case of any changes
+    try {
+      var response = await http.get(Uri.parse(_dataSourceUrl));
+      if (response.body != lessonsJsonLocal) {
+        _lessons = (json.decode(response.body) as List).map((i) => Lesson.fromJson(i)).toList();
+        await db.setString('lessonsJSON', response.body);
+      }
+    } catch (e) {
+      print(e);
+      // this is my error handling :o)
+      if (_lessons.length < 2) {
+        _lessons = [
+          Lesson(audio: '', lessonNumber: 'NO DATA', lessonShortTitle: 'Maybe no internet', lessonTitle: 'NO DATA', lessonText: e.toString(), fullTitle: '', link: ''),
+        ];      }
+    }
+
+    setState(() { });
+
   }
 
   @override
