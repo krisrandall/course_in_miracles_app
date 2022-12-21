@@ -20,16 +20,40 @@ class Lesson {
   });
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
+
+    // For debugging and manually identifying the weird characters that need handling
+    if (json['lessonNumber']=='Lesson 1') {
+      print(json['lessonText']);
+      print(_sanatise(json['lessonText']));
+    }
+
     return Lesson(
-      lessonShortTitle: json['lessonShortTitle'],
-      lessonNumber: json['lessonNumber'],
-      lessonTitle: json['lessonTitle'],
-      lessonText: json['lessonText'],
-      fullTitle: json['fullTitle'],
+      lessonShortTitle: _sanatise(json['lessonShortTitle']),
+      lessonNumber: _sanatise(json['lessonNumber']),
+      lessonTitle: _sanatise(json['lessonTitle']),
+      lessonText: _sanatise(json['lessonText']),
+      fullTitle: _sanatise(json['fullTitle']),
       audio: json['audio'],
       link: json['link'],
     );
   }
+
+  static String _sanatise(String s) {
+    // There are a few funky characters in the text, so we need to remove them
+    if (s==null) return '';
+    // these don't work but should
+    s = s.replaceAll('–', "-");
+    s = s.replaceAll('“', '"');
+    s = s.replaceAll("’", "'");
+    s = s.replaceAll('…', '...');
+    // the data must get warped into something like this in transit ?!?
+    s = s.replaceAll("â¦", "...");
+    s = s.replaceAll("â", "-");
+    s = s.replaceAll("â", "'");
+    return s;
+  }
+
+
 }
 
 /*

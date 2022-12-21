@@ -89,6 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Drawer sideMenu = Drawer(
       child: ListView(
+        key: const PageStorageKey('sideMenu'),
         // Important: Remove any padding from the ListView.
         padding: EdgeInsets.zero,
         children: [
@@ -129,12 +130,23 @@ class _MyHomePageState extends State<MyHomePage> {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              Text(
-                _lessons[_currentLessonIndex].lessonShortTitle, 
-                style: Theme.of(context).textTheme.headline5,
-                
+              Padding( 
+                padding: const EdgeInsets.fromLTRB(20,20,20,0),
+                child: Text(
+                  _lessons[_currentLessonIndex].fullTitle??'', 
+                  style: Theme.of(context).textTheme.headline5,
+                ),
               ),
-              Html(data: _lessons[_currentLessonIndex].lessonText),
+              Padding( 
+                padding: const EdgeInsets.all(20),
+                child: Html(
+                  data: _lessons[_currentLessonIndex].lessonText??'',
+                  style: {
+                    ".snr": Style( display: Display.NONE), // these are some funky sub and super script chars in the original scraped data
+                    ".pnr": Style( display: Display.NONE),
+                  }
+                ),
+              ),
             ],
           ),
         ),
