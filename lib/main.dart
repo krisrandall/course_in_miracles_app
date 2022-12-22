@@ -5,8 +5,8 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'lessonStructure.dart';
+import 'package:html/dom.dart' as dom;
 
 void main() {
   runApp(const MyApp());
@@ -78,9 +78,44 @@ class _MyHomePageState extends State<MyHomePage> {
     // also read the completed lessons from local storage
     _completedLessons = db.getStringList('completedLessons')??[];
 
-    // and open up at the next lesson
-    int nextLessonIndex() => _lessons.indexWhere((l) => !_completedLessons.contains(l.lessonNumber));
-    _currentLessonIndex = nextLessonIndex();
+    // if there are completed lessons, then start at the first incomplete lesson
+    if (_completedLessons.isNotEmpty) {
+      int nextLessonIndex() => _lessons.indexWhere((l) => !_completedLessons.contains(l.lessonNumber)) + 1; // +1 because of the Introduction "Lesson" below
+      _currentLessonIndex = nextLessonIndex();
+    }
+
+    // Finally add an Intro/About page - and just hack it in there as a "Lesson"
+    _lessons.insert(0, 
+      Lesson(
+        audio: '', 
+        lessonNumber: 'Introduction', 
+        lessonShortTitle: '', 
+        lessonTitle: '', 
+        lessonText: '''
+
+This app is a convenient way to do <i>A Course in Miracles</i>.<br/><br/>
+
+For one year do a single lesson every day.<br/><br/>
+Do not do more than one lesson per day.<br/>You need not do a lesson every single day.<br/><br/>
+
+<br/>
+A Course in Miracles Resources:<br/><br/>
+<ul>
+<li><a href="https://acim.org/acim/workbook/introduction/en/s/401">Workbook Introduction</a></li>
+<li><a href="https://acim.org/acim/text/introduction/en/s/51">Full Text of A Course in Miracles</a></li>
+<li><a href="https://www.youtube.com/watch?v=5hWJN4J-nyI">Audio book of A Course in Miracles (YouTube)</a></li>
+<li><a href="https://www.youtube.com/watch?v=C_L9EW95xcA">A Return to Love (YouTube)</a><br/>(I listened to this audio book yesterday, and it was this that introduced me to A Course in Miracles and inspired this app)</li>
+</ul>
+
+<br/><br/>
+
+
+''',
+        fullTitle: '', 
+        link: 'https://cocreations.com.au',
+      )
+    );
+    
 
     setState(() { });
   }
@@ -121,11 +156,12 @@ class _MyHomePageState extends State<MyHomePage> {
             child: ListTile(
               title: Text(l.lessonNumber),
               subtitle: Text(l.lessonShortTitle),
-              trailing: // can tap on the icon to toggle as complete or not
-                IconButton(
-                  icon: const Icon(Icons.check_circle),
-                  onPressed: () => _toggleAsComplete(l),
-                ),
+              trailing: 
+                (l.lessonNumber == 'Introduction') ? null :
+                  IconButton(
+                    icon: const Icon(Icons.check_circle),
+                    onPressed: () => _toggleAsComplete(l),
+                  ),
               iconColor: (_completedLessons.contains(l.lessonNumber)) ? Colors.green : Colors.grey,
               onTap: () {
                 Navigator.pop(context);
@@ -166,7 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
         drawer: sideMenu,
         // add a floating action button to mark the lesson as complete,
         // and to save that in local storage
-        floatingActionButton: FloatingActionButton(
+        floatingActionButton: (_lessons[_currentLessonIndex].lessonNumber == 'Introduction') ? null : FloatingActionButton(
           onPressed: () => _toggleAsComplete(_lessons[_currentLessonIndex]),
           tooltip: 'Mark as complete',
           backgroundColor: (_completedLessons.contains(_lessons[_currentLessonIndex].lessonNumber)) ? Colors.green : Colors.grey,
@@ -189,6 +225,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: {
                     ".snr": Style( display: Display.NONE), // these are some funky sub and super script chars in the original scraped data
                     ".pnr": Style( display: Display.NONE),
+                  },
+                  onLinkTap: (String? url, RenderContext context, Map<String, String> attributes, dom.Element? element) {
+                    launchUrl(Uri.parse(url!));
                   }
                 ),
               ),

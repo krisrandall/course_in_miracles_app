@@ -4,7 +4,7 @@ A Course in Miracles App
 
 
 ## How / Why
-On the evening of Tue 20 Dec 2022 I listened to the following Audio Book : 
+On the evening of Tue 20 Dec 2022 I listened to the following Audio Book : https://www.youtube.com/watch?v=C_L9EW95xcA 
 
 The next day I decided I wanted to do this "Course in Miracles" and I hunted around and managed to find the text, and also resources of the actual course,
 I found that it is an actual 365 day course that you do, and the daily activites seem pretty simple.
@@ -25,7 +25,7 @@ The menu of the app will be as follows:
 1. *About*: This app is a convenient way to do the Course in Miracles.  
   Each day, for 1 year, do a single lesson, ideally first thing in the morning, then mark it as done.  
   Workbook Intro (online): https://acim.org/acim/workbook/introduction/en/s/401   
-  Audio book of full text:      
+  Audio book of full text: https://www.youtube.com/watch?v=5hWJN4J-nyI     
   Full Text (online): https://acim.org/acim/text/introduction/en/s/51    
   Full Text (PDF)
 
