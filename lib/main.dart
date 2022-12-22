@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'lessonStructure.dart';
 
 void main() {
@@ -39,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _dataSourceUrl = 'https://cocreations.com.au/a_course_in_miracles/lessons.json';
   List<Lesson> _lessons = [];
   int _currentLessonIndex = 0;
-
+  List<String> _completedLessons = [];
   
   void _loadLessons() async {
 
@@ -73,9 +75,25 @@ class _MyHomePageState extends State<MyHomePage> {
         ];      }
     }
 
+
+    // also read the completed lessons from local storage
+    _completedLessons = db.getStringList('completedLessons')??[];
+
+
     setState(() { });
 
   }
+
+  void _toggleAsComplete(lesson) async {
+    final db = await SharedPreferences.getInstance();
+    if (!_completedLessons.contains(lesson.lessonNumber)) {
+      _completedLessons.add(lesson.lessonNumber);
+    } else {
+      _completedLessons.remove(lesson.lessonNumber);
+    }
+    await db.setStringList('completedLessons', _completedLessons);
+    setState(() { });
+  } 
 
   @override
   initState() {
@@ -97,8 +115,13 @@ class _MyHomePageState extends State<MyHomePage> {
           ..._lessons.map((l) => ListTile(
             title: Text(l.lessonNumber),
             subtitle: Text(l.lessonShortTitle),
-            trailing: const Icon(Icons.check_circle),
-            iconColor: Colors.grey,
+            trailing: // can tap on the icon to toggle as complete or not
+              IconButton(
+                icon: const Icon(Icons.check_circle),
+                //color: (_completedLessons.contains(l.lessonNumber)) ? Colors.green : Colors.grey,
+                onPressed: () => _toggleAsComplete(l),
+              ),
+            iconColor: (_completedLessons.contains(l.lessonNumber)) ? Colors.green : Colors.grey,
             onTap: () {
               Navigator.pop(context);
               setState(() {
@@ -125,8 +148,25 @@ class _MyHomePageState extends State<MyHomePage> {
       return Scaffold(
         appBar: AppBar(
           title: Text(_lessons[_currentLessonIndex].lessonNumber),
+          actions: [
+            // external link out to the original source
+            IconButton(
+              icon: const Icon(Icons.open_in_new),
+              onPressed: () {
+                launchUrl(Uri.parse(_lessons[_currentLessonIndex].link));
+              },
+            ),
+          ],
         ),
         drawer: sideMenu,
+        // add a floating action button to mark the lesson as complete,
+        // and to save that in local storage
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _toggleAsComplete(_lessons[_currentLessonIndex]),
+          tooltip: 'Mark as complete',
+          backgroundColor: (_completedLessons.contains(_lessons[_currentLessonIndex].lessonNumber)) ? Colors.green : Colors.grey,
+          child: const Icon(Icons.check_circle),
+        ),
         body: SingleChildScrollView(
           child: Column(
             children: [

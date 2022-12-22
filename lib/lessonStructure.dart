@@ -53,7 +53,6 @@ class Lesson {
     return s;
   }
 
-
 }
 
 /*
