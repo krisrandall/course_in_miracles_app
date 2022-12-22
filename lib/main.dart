@@ -75,13 +75,14 @@ class _MyHomePageState extends State<MyHomePage> {
         ];      }
     }
 
-
     // also read the completed lessons from local storage
     _completedLessons = db.getStringList('completedLessons')??[];
 
+    // and open up at the next lesson
+    int nextLessonIndex() => _lessons.indexWhere((l) => !_completedLessons.contains(l.lessonNumber));
+    _currentLessonIndex = nextLessonIndex();
 
     setState(() { });
-
   }
 
   void _toggleAsComplete(lesson) async {
@@ -105,30 +106,35 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
 
+    final MENU_ITEM_HEIGHT = 70.0;
     Drawer sideMenu = Drawer(
       child: ListView(
+        // set the starting position of the sideMenu to have the first incomplete lesson at the top
+        controller: ScrollController(initialScrollOffset: (_completedLessons.isNotEmpty) ? _currentLessonIndex * MENU_ITEM_HEIGHT : 0.0),
         key: const PageStorageKey('sideMenu'),
         // Important: Remove any padding from the ListView.
         padding: EdgeInsets.zero,
         children: [
 
-          ..._lessons.map((l) => ListTile(
-            title: Text(l.lessonNumber),
-            subtitle: Text(l.lessonShortTitle),
-            trailing: // can tap on the icon to toggle as complete or not
-              IconButton(
-                icon: const Icon(Icons.check_circle),
-                //color: (_completedLessons.contains(l.lessonNumber)) ? Colors.green : Colors.grey,
-                onPressed: () => _toggleAsComplete(l),
-              ),
-            iconColor: (_completedLessons.contains(l.lessonNumber)) ? Colors.green : Colors.grey,
-            onTap: () {
-              Navigator.pop(context);
-              setState(() {
-                _currentLessonIndex = _lessons.indexOf(l);
-              });
-            },
-          )).toList(),
+          ..._lessons.map((l) => SizedBox( 
+            height: MENU_ITEM_HEIGHT,
+            child: ListTile(
+              title: Text(l.lessonNumber),
+              subtitle: Text(l.lessonShortTitle),
+              trailing: // can tap on the icon to toggle as complete or not
+                IconButton(
+                  icon: const Icon(Icons.check_circle),
+                  //color: (_completedLessons.contains(l.lessonNumber)) ? Colors.green : Colors.grey,
+                  onPressed: () => _toggleAsComplete(l),
+                ),
+              iconColor: (_completedLessons.contains(l.lessonNumber)) ? Colors.green : Colors.grey,
+              onTap: () {
+                Navigator.pop(context);
+                setState(() {
+                  _currentLessonIndex = _lessons.indexOf(l);
+                });
+              },
+            ))).toList(),
 
         ],
       ),
