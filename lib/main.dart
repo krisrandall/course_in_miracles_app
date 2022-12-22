@@ -124,7 +124,6 @@ class _MyHomePageState extends State<MyHomePage> {
               trailing: // can tap on the icon to toggle as complete or not
                 IconButton(
                   icon: const Icon(Icons.check_circle),
-                  //color: (_completedLessons.contains(l.lessonNumber)) ? Colors.green : Colors.grey,
                   onPressed: () => _toggleAsComplete(l),
                 ),
               iconColor: (_completedLessons.contains(l.lessonNumber)) ? Colors.green : Colors.grey,
@@ -171,7 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
           onPressed: () => _toggleAsComplete(_lessons[_currentLessonIndex]),
           tooltip: 'Mark as complete',
           backgroundColor: (_completedLessons.contains(_lessons[_currentLessonIndex].lessonNumber)) ? Colors.green : Colors.grey,
-          child: const Icon(Icons.check_circle),
+          child: const Icon(Icons.check, size: 40),
         ),
         body: SingleChildScrollView(
           child: Column(
