@@ -1,4 +1,4 @@
-package com.example.cim_app
+package au.com.cocreations.cim_app
 
 import io.flutter.embedding.android.FlutterActivity
 

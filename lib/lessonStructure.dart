@@ -1,13 +1,13 @@
 
 class Lesson {
 
-  String lessonShortTitle;
-  String lessonNumber;
-  String lessonTitle;
-  String lessonText;
-  String fullTitle;
-  String audio;
-  String link;
+  String? lessonShortTitle;
+  String? lessonNumber;
+  String? lessonTitle;
+  String? lessonText;
+  String? fullTitle;
+  String? audio;
+  String? link;
 
   Lesson({
     required this.lessonShortTitle, 
@@ -24,21 +24,21 @@ class Lesson {
     // For debugging and manually identifying the weird characters that need handling
     if (json['lessonNumber']=='Lesson 1') {
       print(json['lessonText']);
-      print(_sanatise(json['lessonText']));
+      print(sanatise(json['lessonText']));
     }
 
     return Lesson(
-      lessonShortTitle: _sanatise(json['lessonShortTitle']),
-      lessonNumber: _sanatise(json['lessonNumber']),
-      lessonTitle: _sanatise(json['lessonTitle']),
-      lessonText: _sanatise(json['lessonText']),
-      fullTitle: _sanatise(json['fullTitle']),
+      lessonShortTitle: sanatise(json['lessonShortTitle']),
+      lessonNumber: sanatise(json['lessonNumber']),
+      lessonTitle: sanatise(json['lessonTitle']),
+      lessonText: sanatise(json['lessonText']),
+      fullTitle: sanatise(json['fullTitle']),
       audio: json['audio'],
       link: json['link'],
     );
   }
 
-  static String _sanatise(String s) {
+  static String sanatise(String s) {
     // There are a few funky characters in the text, so we need to remove them
     if (s==null) return '';
     // these don't work but should

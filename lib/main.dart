@@ -36,6 +36,12 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+
+void printWrapped(String text) {
+  final pattern = new RegExp('.{1,800}'); // 800 is the size of each chunk
+  pattern.allMatches(text).forEach((match) => print(match.group(0)));
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   
   String _dataSourceUrl = 'https://cocreations.com.au/a_course_in_miracles/lessons.json';
@@ -47,11 +53,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // is it already downloaded into local storage ?
     final db = await SharedPreferences.getInstance();
-    var lessonsJsonLocal;
+    List<dynamic> lessonsJsonLocal = [];
     try {
-      lessonsJsonLocal = db.getString('lessonsJSON');
-      _lessons = (json.decode(lessonsJsonLocal) as List).map((i) => Lesson.fromJson(i)).toList();
+      lessonsJsonLocal = json.decode(db.getString('lessonsJson')??'');
+      if (lessonsJsonLocal.isNotEmpty) {
+        for (var i =0; i < lessonsJsonLocal.length; i++) {
+          printWrapped('loading ($i) from server');
+          try {
+            var l = Lesson.fromJson((lessonsJsonLocal)[i]);
+            print('--Loaded $l');
+            _lessons.add(l);
+          } catch (e) {
+            print('**** failed to load LOCAL lesson $i ****');
+            print(e);
+          }
+        }
+      }
     } catch(e) {
+      debugPrint('***** local storage load exception ****');
       print(e);
       // this is my error handling :o)
       _lessons = [
@@ -63,10 +82,23 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       var response = await http.get(Uri.parse(_dataSourceUrl));
       if (response.body != lessonsJsonLocal) {
-        _lessons = (json.decode(response.body) as List).map((i) => Lesson.fromJson(i)).toList();
-        await db.setString('lessonsJSON', response.body);
+        List<dynamic> mList = (json.decode( Lesson.sanatise(response.body)) as List);
+        for (var i =0; i < mList.length; i++) {
+          printWrapped('loading ($i) from server');
+          try {
+            //print('about to load lesson $i  : ${mList[i]}');
+            var l = Lesson.fromJson(mList[i]);
+            print('--Loaded $l');
+            _lessons.add(l);
+          } catch (e) {
+            print('**** failed to load lesson $i ****');
+            print(e);
+          }
+        }
+        await db.setString('lessonsJson', response.body);
       }
     } catch (e) {
+      debugPrint('***** OTHER server load exception ****');
       print(e);
       // this is my error handling :o)
       if (_lessons.length < 2) {
@@ -148,14 +180,14 @@ A Course in Miracles Resources:<br/><br/>
         controller: ScrollController(initialScrollOffset: (_completedLessons.isNotEmpty) ? _currentLessonIndex * MENU_ITEM_HEIGHT : 0.0),
         key: const PageStorageKey('sideMenu'),
         // Important: Remove any padding from the ListView.
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.fromLTRB(0, 40, 0, 10),
         children: [
 
           ..._lessons.map((l) => SizedBox( 
             height: MENU_ITEM_HEIGHT,
             child: ListTile(
-              title: Text(l.lessonNumber),
-              subtitle: Text(l.lessonShortTitle),
+              title: Text(l.lessonNumber??'Null'),
+              subtitle: Text(l.lessonShortTitle??'Null', maxLines: 2),
               trailing: 
                 (l.lessonNumber == 'Introduction') ? null :
                   IconButton(
@@ -178,7 +210,7 @@ A Course in Miracles Resources:<br/><br/>
     if (_lessons.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Loading...'),
+          title: const Text('Loading Miracles ...'),
         ),
         drawer: sideMenu,
         body: const Center(
@@ -188,13 +220,13 @@ A Course in Miracles Resources:<br/><br/>
     } else {
       return Scaffold(
         appBar: AppBar(
-          title: Text(_lessons[_currentLessonIndex].lessonNumber),
+          title: Text(_lessons[_currentLessonIndex].lessonNumber??'Null'),
           actions: [
             // external link out to the original source
             IconButton(
               icon: const Icon(Icons.open_in_new),
               onPressed: () {
-                launchUrl(Uri.parse(_lessons[_currentLessonIndex].link));
+                launchUrl(Uri.parse(_lessons[_currentLessonIndex].link??'Null'));
               },
             ),
           ],
@@ -231,6 +263,7 @@ A Course in Miracles Resources:<br/><br/>
                   }
                 ),
               ),
+              const SizedBox(height: 60),
             ],
           ),
         ),
