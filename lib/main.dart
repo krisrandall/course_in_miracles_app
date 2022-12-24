@@ -55,13 +55,13 @@ class _MyHomePageState extends State<MyHomePage> {
     final db = await SharedPreferences.getInstance();
     List<dynamic> lessonsJsonLocal = [];
     try {
-      lessonsJsonLocal = json.decode(db.getString('lessonsJson')??'');
+      lessonsJsonLocal = json.decode(Lesson.sanatise(db.getString('lessons--Json')??''));
       if (lessonsJsonLocal.isNotEmpty) {
         for (var i =0; i < lessonsJsonLocal.length; i++) {
-          printWrapped('loading ($i) from server');
+          //printWrapped('loading ($i) from server');
           try {
             var l = Lesson.fromJson((lessonsJsonLocal)[i]);
-            print('--Loaded $l');
+            //print('--Loaded $l');
             _lessons.add(l);
           } catch (e) {
             print('**** failed to load LOCAL lesson $i ****');
@@ -72,30 +72,26 @@ class _MyHomePageState extends State<MyHomePage> {
     } catch(e) {
       debugPrint('***** local storage load exception ****');
       print(e);
-      // this is my error handling :o)
-      _lessons = [
-        Lesson(audio: '', lessonNumber: 'NO DATA', lessonShortTitle: 'Maybe no internet', lessonTitle: 'NO DATA', lessonText: e.toString(), fullTitle: '', link: ''),
-      ];
     }
 
     // also fetch from server, in case of any changes
     try {
       var response = await http.get(Uri.parse(_dataSourceUrl));
-      if (response.body != lessonsJsonLocal) {
-        List<dynamic> mList = (json.decode( Lesson.sanatise(response.body)) as List);
+      List<dynamic> mList = (json.decode( Lesson.sanatise(response.body)) as List);
+      if (mList != lessonsJsonLocal) {
         for (var i =0; i < mList.length; i++) {
-          printWrapped('loading ($i) from server');
+          //printWrapped('loading ($i) from server');
           try {
             //print('about to load lesson $i  : ${mList[i]}');
-            var l = Lesson.fromJson(mList[i]);
-            print('--Loaded $l');
+            var l = Lesson.fromJson( json.decode(Lesson.sanatise(json.encode(mList[i]))));
+            //print('--Loaded $l');
             _lessons.add(l);
           } catch (e) {
             print('**** failed to load lesson $i ****');
             print(e);
           }
         }
-        await db.setString('lessonsJson', response.body);
+        await db.setString('lessons--Json', response.body);
       }
     } catch (e) {
       debugPrint('***** OTHER server load exception ****');
@@ -136,10 +132,12 @@ A Course in Miracles Resources:<br/><br/>
 <li><a href="https://acim.org/acim/workbook/introduction/en/s/401">Workbook Introduction</a></li>
 <li><a href="https://acim.org/acim/text/introduction/en/s/51">Full Text of A Course in Miracles</a></li>
 <li><a href="https://www.youtube.com/watch?v=5hWJN4J-nyI">Audio book of A Course in Miracles (YouTube)</a></li>
-<li><a href="https://www.youtube.com/watch?v=C_L9EW95xcA">A Return to Love (YouTube)</a><br/>(I listened to this audio book yesterday, and it was this that introduced me to A Course in Miracles and inspired this app)</li>
+<li><a href="https://www.youtube.com/watch?v=C_L9EW95xcA">A Return to Love (YouTube)</a><br/></li>
 </ul>
 
 <br/><br/>
+
+Use the menu to the left to navigate to the lessons.<br/><br/>
 
 
 ''',

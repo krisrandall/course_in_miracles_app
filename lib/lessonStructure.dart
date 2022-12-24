@@ -22,19 +22,19 @@ class Lesson {
   factory Lesson.fromJson(Map<String, dynamic> json) {
 
     // For debugging and manually identifying the weird characters that need handling
-    if (json['lessonNumber']=='Lesson 1') {
+    if (json['lessonNumber']=='Lesson 50') {
       print(json['lessonText']);
       print(sanatise(json['lessonText']));
     }
 
     return Lesson(
-      lessonShortTitle: sanatise(json['lessonShortTitle']),
-      lessonNumber: sanatise(json['lessonNumber']),
-      lessonTitle: sanatise(json['lessonTitle']),
-      lessonText: sanatise(json['lessonText']),
-      fullTitle: sanatise(json['fullTitle']),
-      audio: json['audio'],
-      link: json['link'],
+      lessonShortTitle: json.containsKey('lessonShortTitle') ? sanatise(json['lessonShortTitle']) : '',
+      lessonNumber: json.containsKey('lessonNumber') ? sanatise(json['lessonNumber']) : '',
+      lessonTitle: json.containsKey('lessonTitle') ? (json['lessonTitle']) : '',
+      lessonText: json.containsKey('lessonText') ? sanatise(json['lessonText']) : '',
+      fullTitle: json.containsKey('fullTitle') ? (json['fullTitle']) : '',
+      audio: json.containsKey('audio') ? sanatise(json['audio']) : '',
+      link: json.containsKey('link') ? (json['link']) : '',
     );
   }
 
